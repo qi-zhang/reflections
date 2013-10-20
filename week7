@@ -1,0 +1,12 @@
+<h3>Weekly Reflections for the week 10/13-10/19</h3>
+
+<h4>Working with JSON in Python</h4>
+
+JSON is format of hierarchical data file. The format of JSON file is similar to a flexible combination of dict and list object in Python. Hierarchical data file means same field name is reusable across the database as long as these field names are nested under different hierarch. That's why it is not a good idea to search for certain information with regular expression in hierarchical data files. To find certain information of a hierarchical file, it is necessary to figure the structure of a JSON file.
+
+In terms of file format, JSON file is similar to a dict object in Python, but it's value could be flexible combination of dict object and list object. Naturally, we can leverage concept of dict object and list object to parse a JSON file.
+
+The first step is to create a dict object from a JSON file with json.loads which is a function defined in json module. json.loads() returns a dict object. For example,
+
+
+detail=json.loads(urllib.urlopen("http://earthquake.usgs.gov/product/nearby-cities/ci11380834/us/1382197630296/nearby-cities.json").read())
