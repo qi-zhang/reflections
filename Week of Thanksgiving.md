@@ -10,13 +10,21 @@ The 2nd thing I noticed is that the original code source Luen's code which conta
 
 The 3rd thing I noticed is that in the original code vectors are declared as place holder first and assigned later in a for loop. This approach works, but the better approach in R is to do it with sapply function. 
 
-Finally, I went through the code step-by-step. I noticed that the code for calculating intermediate varaible w58.list and w58.dist
+Finally, I went through the code step-by-step and tried to improve the performance of the code. To me, reproducible does not means to share the code and dataset with other people only, it also means that the code should be scalable to handle different dataset. Soon I noticed that the it is possible to improve the code for calculating intermediate varaible w58.list and w58.dist might cause
 
-  for(KK in 1:length(w58.list)){
-    w58.list[KK]=min((times[1+KK]-times[1:(KK)])/(5.8^mags[1:(KK)]))}
-  for(KK in 1:length(timelist)){
-    w58.dist[KK]=min((timelist[KK]-times[1:n.events[KK]])/(5.8^mags[1:n.events[KK]]))}
+    for(KK in 1:length(w58.list)){
+      w58.list[KK]=min((times[1+KK]-times[1:(KK)])/(5.8^mags[1:(KK)]))}
+    for(KK in 1:length(timelist)){
+      w58.dist[KK]=min((timelist[KK]-times[1:n.events[KK]])/(5.8^mags[1:n.events[KK]]))}
     
-The code needs to get power series 5.8^n inside the loop so it dose the calculation everytime, and the calculation results are abandoned immediately after evaluation of that expression. On the other hand, all of these power values will be recalculated again for next KK value. Apparently it can be improved. Take w58.list as example, K ranges from 1 to N, which means it is necessary to get a power series of N items and the code in the for-loop will evaluate power about N*N/2 times. Take the fact that power evaluation is a pretty expensive operation into consideration, there is notable room for performance improvement here.
+The code needs to get power series 5.8^n inside the loop so it dose the calculation everytime, and the calculation results are abandoned immediately after evaluation of that expression. On the other hand, all of these power values will be recalculated again for next KK value. Apparently it can be improved. Take w58.list as example, K ranges from 1 to N, which means it is necessary to get a power series of N items and the code in the for-loop will evaluate power about N*N/2 times. Take the fact that power evaluation is a pretty expensive operation into consideration, there is notable room for improvement here. I modified this part by adding power series generation code before for loop and refer to the pre-generated power series in the for loop instead of calcuating on the fly. Here is the new code.
 
-Combine all of these effort together, I checked-in the impvoed version which runs pretty much 2 times faster than the original code.
+    power_mags=5.8^mags
+    w58.list=sapply(c(1:n.training), function(x) {
+      min((times[1+x]-times[1:x])/(power_mags[1:x]))
+    })
+    w58.dist=sapply(c(1:length(timelist)), function(x) {
+      min((timelist[x]-times[1:n.events[x]])/(power_mags[1:n.events[x]]))
+    })
+
+By combining all of these efforts together, the impvoed version code I checked in runs pretty much 2 times faster than the original code.
